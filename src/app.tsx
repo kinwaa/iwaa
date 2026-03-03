@@ -4,6 +4,7 @@ import { Suspense } from "solid-js";
 import "./app.css";
 import Home from "./routes/index";
 import NotFound from "./routes/[...404]";
+import DateTool from "./routes/date-tool";
 
 export default function App() {
   return (
@@ -11,12 +12,16 @@ export default function App() {
       root={props => (
         <MetaProvider>
           <Title>SolidStart - Basic</Title>
-          <a href="/">Index</a>
+          <nav>
+            <a href="/">首页</a>
+            <a href="/date-tool">日期工具</a>
+          </nav>
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}
     >
       <Route path="/" component={Home} />
+      <Route path="/date-tool" component={DateTool} />
       <Route path="*" component={NotFound} />
     </Router>
   );
