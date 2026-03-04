@@ -1,5 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, onMount, onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 
 export default function DateTool() {
   const [currentTime, setCurrentTime] = createSignal(new Date());
