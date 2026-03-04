@@ -7,6 +7,7 @@ export default function DateTool() {
   const [dateToTimestamp, setDateToTimestamp] = createSignal("");
   const [precision, setPrecision] = createSignal("milliseconds");
   const [copied, setCopied] = createSignal(false);
+  const [dateCopied, setDateCopied] = createSignal(false);
 
   // 实时更新当前时间
   const updateCurrentTime = () => {
@@ -28,6 +29,20 @@ export default function DateTool() {
       .catch(err => {
         console.error("复制失败:", err);
       });
+  };
+
+  // 复制日期转时间戳结果到剪贴板
+  const copyDateTimestamp = () => {
+    if (dateToTimestamp()) {
+      navigator.clipboard.writeText(dateToTimestamp())
+        .then(() => {
+          setDateCopied(true);
+          setTimeout(() => setDateCopied(false), 2000);
+        })
+        .catch(err => {
+          console.error("复制失败:", err);
+        });
+    }
   };
 
   // 格式化日期时间
@@ -54,12 +69,38 @@ export default function DateTool() {
     }
   };
 
-  // 当精度改变时，重置日期输入框
+  // 当精度改变时，重新计算时间戳并更新日期输入框
   const handlePrecisionChange = (e: Event) => {
     const target = e.target as HTMLSelectElement;
     setPrecision(target.value);
-    // 清空转换结果
-    setDateToTimestamp("");
+    // 根据当前输入的日期重新计算时间戳并更新输入框
+    const dateInput = document.getElementById('dateInput') as HTMLInputElement;
+    if (dateInput.value) {
+      const date = new Date(dateInput.value);
+      // 重新格式化日期输入框的值，以适应新的精度
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+      
+      if (precision() === "milliseconds") {
+        // 格式：YYYY-MM-DDTHH:MM:SS.mmm
+        dateInput.value = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+      } else {
+        // 格式：YYYY-MM-DDTHH:MM:SS
+        dateInput.value = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      }
+      
+      // 重新计算时间戳
+      const ts = precision() === "milliseconds" ? date.getTime() : Math.floor(date.getTime() / 1000);
+      setDateToTimestamp(ts.toString());
+    } else {
+      // 清空转换结果
+      setDateToTimestamp("");
+    }
   };
 
   return (
@@ -127,7 +168,16 @@ export default function DateTool() {
           转换为时间戳
         </button>
         <div class="converted-timestamp">
-          {dateToTimestamp()}
+          <span>{dateToTimestamp()}</span>
+          {dateToTimestamp() && (
+            <button 
+              class="copy-btn" 
+              onclick={copyDateTimestamp}
+              title="复制时间戳"
+            >
+              {dateCopied() ? "已复制" : "复制"}
+            </button>
+          )}
         </div>
       </div>
     </main>
