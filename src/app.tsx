@@ -8,7 +8,7 @@ import { apiService } from "./services/api";
 import "./app.css";
 import Home from "./routes/index";
 import NotFound from "./routes/[...404]";
-import DateTool from "./routes/date-tool";
+import DateTools from "./routes/date-tools";
 
 function ensureCientId(pubKeySup: () => forge.pki.rsa.PublicKey): string {
    let encodedClientId = storage.getClientId(); // 可以获取的话，是用服务器公钥加密了的
@@ -125,7 +125,7 @@ export default function App() {
          )}
       >
          <Route path="/" component={Home} />
-         <Route path="/date-tool" component={DateTool} />
+         <Route path="/date-tool" component={DateTools} />
          <Route path="*" component={NotFound} />
       </Router>
    );
