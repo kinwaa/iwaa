@@ -1,5 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { createSignal, onCleanup, createEffect } from "solid-js";
+import { Box, Typography, Card, CardContent, TextField, Select, MenuItem, FormControl, InputLabel, Button } from "@suid/material";
 
 // 精度类型定义
 type Precision = "milliseconds" | "seconds";
@@ -20,8 +21,9 @@ export default function DateTool() {
    const [currentTime, setCurrentTime] = createSignal(new Date());
    const [timestamp, setTimestamp] = createSignal("");
    const [dateToTimestamp, setDateToTimestamp] = createSignal("");
-   const [dateInputValue, setDateInputValue] = createSignal("");
    const [precision, setPrecision] = createSignal<Precision>("milliseconds");
+   const [dateInputValue, setDateInputValue] = createSignal("");
+
    const [copyState, setCopyState] = createSignal<CopyState>({
       timestamp: false,
       dateTimestamp: false
@@ -170,83 +172,128 @@ export default function DateTool() {
       }
    });
 
+   // 当精度改变时，重新格式化日期输入值
+   createEffect(() => {
+      const val = dateInputValue();
+      if (!val) return;
+
+      const date = new Date(val);
+      if (isNaN(date.getTime())) return;
+
+      const formatted = formatDateForInput(date, precision());
+      if (formatted !== val) {
+         setDateInputValue(formatted);
+      }
+   });
+
    return (
-      <main class="date-tool">
+      <Box sx={{ py: 4 }}>
          <Title>日期工具</Title>
-         <h1>日期工具</h1>
+         <Typography variant="h4" component="h1" gutterBottom>
+            日期工具
+         </Typography>
 
          {/* 精度控制 */}
-         <div class="precision-control">
-            <label for="precision-select">日期精度：</label>
-            <select
-               id="precision-select"
-               value={precision()}
-               onchange={onPrecisionChange}
-            >
-               {precisionOptions.map(opt => (
-                  <option value={opt.value}>{opt.label}</option>
-               ))}
-            </select>
-         </div>
+         <Box sx={{ mb: 4 }}>
+            <FormControl fullWidth>
+               <InputLabel id="precision-select-label">日期精度</InputLabel>
+               <Select
+                  labelId="precision-select-label"
+                  id="precision-select"
+                  value={precision()}
+                  label="日期精度"
+                  onChange={onPrecisionChange}
+               >
+                  {precisionOptions.map(opt => (
+                     <MenuItem value={opt.value}>
+                        {opt.label}
+                     </MenuItem>
+                  ))}
+               </Select>
+            </FormControl>
+         </Box>
 
          {/* 当前时间 */}
-         <div class="current-time">
-            <h2>当前时间</h2>
-            <div class="time-display">
-               <span>{formatDate(currentTime())}</span>
-               <div class="timestamp">
-                  {tsFromDate(currentTime())}
-                  <button
-                     class="copy-btn"
-                     onclick={copyTimestamp}
-                     title="复制时间戳"
-                     aria-label="复制时间戳"
-                  >
-                     {copyState().timestamp ? "已复制" : "复制"}
-                  </button>
-               </div>
-            </div>
-         </div>
+         <Card sx={{ mb: 4 }}>
+            <CardContent>
+               <Typography variant="h5" component="h2" gutterBottom>
+                  当前时间
+               </Typography>
+               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="body1">
+                     {formatDate(currentTime())}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                     <Typography variant="body1">
+                        {tsFromDate(currentTime())}
+                     </Typography>
+                     <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={copyTimestamp}
+                     >
+                        {copyState().timestamp ? "已复制" : "复制"}
+                     </Button>
+                  </Box>
+               </Box>
+            </CardContent>
+         </Card>
 
          {/* 时间戳转换 */}
-         <div class="timestamp-converter">
-            <h2>时间戳转换</h2>
-            <input
-               type="text"
-               placeholder="输入时间戳"
-               value={timestamp()}
-               oninput={(e) => setTimestamp(e.target.value)}
-               aria-label="输入时间戳"
-            />
-            <div class="converted-date">
-               {convertTimestamp(timestamp())}
-            </div>
-         </div>
+         <Card sx={{ mb: 4 }}>
+            <CardContent>
+               <Typography variant="h5" component="h2" gutterBottom>
+                  时间戳转换
+               </Typography>
+               <TextField
+                  fullWidth
+                  placeholder="输入时间戳"
+                  value={timestamp()}
+                  onChange={(e) => setTimestamp(e.target.value)}
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+               />
+               <Typography variant="body1" sx={{ mt: 2 }}>
+                  {convertTimestamp(timestamp())}
+               </Typography>
+            </CardContent>
+         </Card>
 
          {/* 日期转时间戳 */}
-         <div class="date-to-timestamp">
-            <h2>日期转时间戳</h2>
-            <input
-               type="datetime-local"
-               value={dateInputValue()}
-               oninput={(e) => setDateInputValue((e.target as HTMLInputElement).value)}
-               step={precision() === "milliseconds" ? "0.001" : "1"}
-               aria-label="选择日期时间"
-            />
-            <div class="converted-timestamp">
-               <span>{dateToTimestamp()}</span>
-               {dateToTimestamp() && (
-                  <button
-                     class="copy-btn"
-                     onclick={copyDateTimestamp}
-                     title="复制时间戳"
-                     aria-label="复制时间戳"
-                  >
-                     {copyState().dateTimestamp ? "已复制" : "复制"}
-                  </button>
-               )}
-            </div>
-         </div>
-      </main>
+         <Card sx={{ mb: 4 }}>
+            <CardContent>
+               <Typography variant="h5" component="h2" gutterBottom>
+                  日期转时间戳
+               </Typography>
+               <TextField
+                  fullWidth
+                  type="datetime-local"
+                  value={dateInputValue()}
+                  onChange={(e) => setDateInputValue((e.target as HTMLInputElement).value)}
+                  InputProps={{
+                     inputProps: {
+                        step: precision() === "milliseconds" ? "0.001" : "1"
+                     }
+                  }}
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+               />
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography variant="body1">
+                     {dateToTimestamp()}
+                  </Typography>
+                  {dateToTimestamp() && (
+                     <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={copyDateTimestamp}
+                     >
+                        {copyState().dateTimestamp ? "已复制" : "复制"}
+                     </Button>
+                  )}
+               </Box>
+            </CardContent>
+         </Card>
+      </Box>
    );
 }
