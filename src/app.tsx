@@ -8,7 +8,8 @@ import { apiService } from "./services/api";
 import "./app.css";
 import Home from "./routes/index";
 import NotFound from "./routes/[...404]";
-import DateTool from "./routes/date-tool";
+import DateTools from "./routes/date-tools";
+import { AppBar, Toolbar, Button, Container, Box } from "@suid/material";
 
 function ensureCientId(pubKeySup: () => forge.pki.rsa.PublicKey): string {
    let encodedClientId = storage.getClientId(); // 可以获取的话，是用服务器公钥加密了的
@@ -116,16 +117,22 @@ export default function App() {
          root={props => (
             <MetaProvider>
                <Title>SolidStart - Basic</Title>
-               <nav>
-                  <a href="/">首页</a>
-                  <a href="/date-tool">日期工具</a>
-               </nav>
-               <Suspense>{props.children}</Suspense>
+               <AppBar position="static">
+                  <Toolbar>
+                     <Button color="inherit" href="/">首页</Button>
+                     <Button color="inherit" href="/date-tools">日期工具</Button>
+                  </Toolbar>
+               </AppBar>
+               <Container maxWidth="md">
+                  <Box sx={{ mt: 4 }}>
+                     <Suspense>{props.children}</Suspense>
+                  </Box>
+               </Container>
             </MetaProvider>
          )}
       >
          <Route path="/" component={Home} />
-         <Route path="/date-tool" component={DateTool} />
+         <Route path="/date-tools" component={DateTools} />
          <Route path="*" component={NotFound} />
       </Router>
    );
